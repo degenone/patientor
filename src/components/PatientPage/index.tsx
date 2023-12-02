@@ -9,8 +9,11 @@ import MaleIcon from '@mui/icons-material/Female';
 import { assertNever } from "../../utlis";
 import EntryElement from "./EntryElement";
 
+interface Props {
+  getDiagnosisName: (code: string) => string;
+}
 
-const PatientPage = () => {
+const PatientPage = ({ getDiagnosisName }: Props) => {
   const [patient, setPatient] = useState<Patient>();
 
   const match = useMatch('/patients/:id');
@@ -80,7 +83,7 @@ const PatientPage = () => {
             <Grid item xs={12}>
               <Typography variant="h6">Entries</Typography>
             </Grid>
-            {patient.entries.map((entry) => <EntryElement key={entry.id} entry={entry} />)}
+            {patient.entries.map((entry) => <EntryElement key={entry.id} entry={entry} getDiagnosisName={getDiagnosisName} />)}
           </>
         )}
       </Grid>
