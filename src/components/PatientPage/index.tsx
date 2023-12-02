@@ -6,6 +6,7 @@ import axios from "axios";
 import { Grid, Typography } from "@mui/material";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Female';
+import { assertNever } from "../../utlis";
 
 
 const PatientPage = () => {
@@ -31,7 +32,11 @@ const PatientPage = () => {
   }, [match]);
 
   if (!patient) {
-    return <div className="app">Not found!</div>;
+    return (
+      <div className="app">
+        <Typography variant="h5">Patient not found!</Typography>
+      </div>
+    );
   }
 
   const genderIcon = () => {
@@ -43,6 +48,7 @@ const PatientPage = () => {
       case Gender.Other:
         return <Typography>Gender: Other</Typography>;
       default:
+        assertNever(patient.gender);
         break;
     }
   };
@@ -51,7 +57,7 @@ const PatientPage = () => {
     <div className="app">
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h5">Patient information</Typography>
+          <Typography variant="h5" align="center">Patient information</Typography>
         </Grid>
         <Grid item xs={2}><Typography>Name</Typography></Grid>
         <Grid item xs={2}>
