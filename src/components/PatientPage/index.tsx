@@ -83,7 +83,12 @@ const PatientPage = ({ getDiagnosisName }: Props) => {
             <Grid item xs={12}>
               <Typography variant="h6">Entries</Typography>
             </Grid>
-            {patient.entries.map((entry) => <EntryElement key={entry.id} entry={entry} getDiagnosisName={getDiagnosisName} />)}
+            {patient.entries.map((entry) => (
+              <EntryElement
+                key={entry.id}
+                entry={entry}
+                getDiagnosisName={getDiagnosisName} />
+            ))}
           </>
         )}
       </Grid>
