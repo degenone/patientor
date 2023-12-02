@@ -7,6 +7,7 @@ import { Grid, Typography } from "@mui/material";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Female';
 import { assertNever } from "../../utlis";
+import EntryElement from "./EntryElement";
 
 
 const PatientPage = () => {
@@ -55,7 +56,7 @@ const PatientPage = () => {
   
   return (
     <div className="app">
-      <Grid container spacing={2}>
+      <Grid container>
         <Grid item xs={12}>
           <Typography variant="h5" align="center">Patient information</Typography>
         </Grid>
@@ -74,6 +75,14 @@ const PatientPage = () => {
         <Grid item xs={10}>
           <Typography>{patient.occupation}</Typography>
         </Grid>
+        {(patient.entries.length > 0) && (
+          <>
+            <Grid item xs={12}>
+              <Typography variant="h6">Entries</Typography>
+            </Grid>
+            {patient.entries.map((entry) => <EntryElement key={entry.id} entry={entry} />)}
+          </>
+        )}
       </Grid>
     </div>
   );
