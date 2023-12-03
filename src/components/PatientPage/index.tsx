@@ -1,32 +1,44 @@
 import { useEffect, useState } from "react";
-import { Gender, Patient } from "../../types";
+import { Diagnosis, EntryFromValues, Gender, Patient } from "../../types";
 import { useMatch } from "react-router-dom";
 import patientService from "../../services/patients";
 import axios from "axios";
-import { Grid, Typography } from "@mui/material";
+import { Alert, Button, Grid, Typography } from "@mui/material";
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Female';
 import { assertNever } from "../../utlis";
 import EntryElement from "./EntryElement";
+import AddEntryModal from "../AddEntryModal";
 
 interface Props {
   getDiagnosisName: (code: string) => string;
+  diagnosis: Diagnosis[];
 }
 
-const PatientPage = ({ getDiagnosisName }: Props) => {
+const PatientPage = ({ getDiagnosisName, diagnosis }: Props) => {
+
   const [patient, setPatient] = useState<Patient>();
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
 
   const match = useMatch('/patients/:id');
   useEffect(() => {
     const fetchPatient = async (patientId: string) => {
       try {
-        const patient = await patientService.getById(patientId);
-        setPatient(patient);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          console.error(error.message);
+        const p = await patientService.getById(patientId);
+        setPatient(p);
+      } catch (e: unknown) {
+        if (axios.isAxiosError(e)) {
+          if (e?.response?.status && e?.response?.status === 404) {
+            const message = e.response.statusText;
+            console.error(message);
+          } else {
+            console.log('Unrecognized axios error', e);
+            setError('Unrecognized axios error');
+          }
         } else {
-          console.log('[ERR]', error);
+          console.log('Unknown error', e);
+          setError("Unknown error");
         }
       }
     };
@@ -38,11 +50,41 @@ const PatientPage = ({ getDiagnosisName }: Props) => {
   if (!patient) {
     return (
       <div className="app">
+        {error && <Alert severity="error">{error}</Alert>}
         <Typography variant="h5">Patient not found!</Typography>
       </div>
     );
   }
 
+  const openModal = (): void => setModalOpen(true);
+
+  const closeModal = (): void => {
+    setModalOpen(false);
+    setError(undefined);
+  };
+
+  const submitNewEntry = async (values: EntryFromValues) => {
+    if (!patient || !patient.id) return;
+    try {
+      const p = await patientService.addEntry(patient.id, values);
+      setPatient(p);
+      setModalOpen(false);
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        if (e?.response?.data && typeof e?.response?.data === "string") {
+          const message = e.response.data;
+          console.error(message);
+          setError(message);
+        } else {
+          setError("Unrecognized axios error");
+        }
+      } else {
+        console.error("Unknown error", e);
+        setError("Unknown error");
+      }
+    }
+  };
+  
   const genderIcon = () => {
     switch (patient.gender) {
       case Gender.Male:
@@ -92,6 +134,15 @@ const PatientPage = ({ getDiagnosisName }: Props) => {
           </>
         )}
       </Grid>
+      <AddEntryModal
+        modalOpen={modalOpen}
+        onClose={closeModal}
+        error={error}
+        onSubmit={submitNewEntry}
+        diagnosis={diagnosis} />
+      <Button variant="contained" onClick={openModal} sx={{ marginBlockStart: '0.5rem' }}>
+        Add New Entry
+      </Button>
     </div>
   );
 };
